@@ -13,9 +13,9 @@
 //!
 //! fn main() -> Result<(), Error> {
 //!     let mut deck = Deck::new(1234, "Example Deck", "Example Deck containing 2 Flashcards");
-//!     deck.add_note(Note::new(basic_model(), vec!["What is the capital of France?", "Paris"])?);
-//!     deck.add_note(Note::new(basic_model(), vec!["What is the capital of Germany?", "Berlin"])?);
-//!     deck.write_to_file("output.apkg")?;
+//!     deck.add_note(Note::new(basic_model(), vec!["What is the capital of France.unwrap()", "Paris"]).unwrap());
+//!     deck.add_note(Note::new(basic_model(), vec!["What is the capital of Germany.unwrap()", "Berlin"]).unwrap());
+//!     deck.write_to_file("output.apkg").unwrap();
 //!     Ok(())
 //! }
 //! ```
@@ -32,7 +32,7 @@
 //!
 //! fn main() -> Result<(), Error> {
 //!     // let my_model = ...
-//!     let my_note = Note::new(my_model, vec!["Capital of Argentina", "Buenos Aires"])?;
+//!     let my_note = Note::new(my_model, vec!["Capital of Argentina", "Buenos Aires"]).unwrap();
 //!     Ok(())
 //! }
 //! ```
@@ -105,7 +105,7 @@
 //! Then, create a `Package` for your `Deck` and write it to a file:
 //!
 //! ```rust,ignore
-//! my_deck.write_to_file("output.apkg")?;
+//! my_deck.write_to_file("output.apkg").unwrap();
 //! ```
 //!
 //! You can then load `output.apkg` into Anki using File -> Import...
@@ -119,8 +119,8 @@
 //! fn main() -> Result<(), Error> {
 //!     // ...
 //!     // my_deck.add(my_note)
-//!     let mut my_package = Package::new(vec![my_deck], vec!["sound.mp3", "images/image.jpg"])?;
-//!     my_package.write_to_file("output.apkg")?;
+//!     let mut my_package = Package::new(vec![my_deck], vec!["sound.mp3", "images/image.jpg"]).unwrap();
+//!     my_package.write_to_file("output.apkg").unwrap();
 //!     Ok(())
 //! }
 //! ```
@@ -160,14 +160,14 @@
 //! #        .qfmt("{{Question}}{{Question}}<br>{{MyMedia}}") // AND THIS
 //! #        .afmt(r#"{{FrontSide}}<hr id="answer">{{Answer}}"#)],
 //! # );
-//! let my_note = Note::new(my_model.clone(), vec!["Capital of Argentina", "Buenos Aires", "[sound:sound.mp3]"])?;
+//! let my_note = Note::new(my_model.clone(), vec!["Capital of Argentina", "Buenos Aires", "[sound:sound.mp3]"]).unwrap();
 //! // or
-//! let my_note = Note::new(my_model.clone(), vec!["Capital of Argentina", "Buenos Aires", r#"<img src="image.jpg">"#])?;
+//! let my_note = Note::new(my_model.clone(), vec!["Capital of Argentina", "Buenos Aires", r#"<img src="image.jpg">"#]).unwrap();
 //! # Ok(())
 //! # }
 //! ```
 //!
-//! You *cannot* put `<img src="{MyMedia}">` in the template and `image.jpg` in the field. See these sections in the Anki manual for more information: [Importing Media](https://docs.ankiweb.net/#/importing?id=importing-media) and [Media & LaTeX](https://docs.ankiweb.net/#/templates/fields?id=media-amp-latex).
+//! You *cannot* put `<img src="{MyMedia}">` in the template and `image.jpg` in the field. See these sections in the Anki manual for more information: [Importing Media](https://docs.ankiweb.net/#/importing.unwrap()id=importing-media) and [Media & LaTeX](https://docs.ankiweb.net/#/templates/fields.unwrap()id=media-amp-latex).
 //!
 //! You should only put the filename (aka basename) and not the full path in the field; `<img src="images/image.jpg">` will *not* work. Media files should have unique filenames.
 //!
@@ -335,7 +335,9 @@ def setup(fname):
             .unwrap()
             .to_owned();
         let col = setup
-            .call1("setup", (PyString::new(*py, col_fname),))
+            .getattr("setup")
+            .unwrap()
+            .call1((PyString::new(*py, col_fname),))
             .unwrap();
         col
     }
@@ -364,12 +366,8 @@ def cleanup(fname, col):
             let cleanup = PyModule::from_code(*self.py, code, "test_cleanup", "test_cleanup.py")
                 .unwrap()
                 .to_owned();
-            cleanup
-                .call(
-                    "cleanup",
-                    (PyString::new(*self.py, &self.col_fname), self.col),
-                    None,
-                )
+            let fun = cleanup.getattr("cleanup").unwrap();
+            fun.call((PyString::new(*self.py, &self.col_fname), self.col), None)
                 .unwrap();
         }
     }
@@ -440,7 +438,9 @@ def assertion(col):
             let assertion =
                 PyModule::from_code(*self.py, &code, "assertion", "assertion.py").unwrap();
             assertion
-                .call1("assertion", (self.col,))
+                .getattr("assertion")
+                .unwrap()
+                .call1((self.col,))
                 .unwrap()
                 .extract()
                 .unwrap()
@@ -462,7 +462,9 @@ def check_media(col):
                 .unwrap()
                 .to_owned();
             check
-                .call1("check_media", (self.col,))
+                .getattr("check_media")
+                .unwrap()
+                .call1((self.col,))
                 .unwrap()
                 .extract()
                 .unwrap()
@@ -716,7 +718,9 @@ def latex(col, key):
                 .to_owned();
             assert_eq!(
                 assertion
-                    .call("latex", (col, PyString::new(py, "latexPre"),), None,)
+                    .getattr("latex")
+                    .unwrap()
+                    .call((col, PyString::new(py, "latexPre"),), None,)
                     .unwrap()
                     .extract::<String>()
                     .unwrap(),
@@ -724,7 +728,9 @@ def latex(col, key):
             );
             assert_eq!(
                 assertion
-                    .call("latex", (col, PyString::new(py, "latexPost"),), None,)
+                    .getattr("latex")
+                    .unwrap()
+                    .call((col, PyString::new(py, "latexPost"),), None,)
                     .unwrap()
                     .extract::<String>()
                     .unwrap(),

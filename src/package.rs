@@ -35,11 +35,11 @@ use std::str::FromStr;
 /// );
 ///
 /// let mut deck = Deck::new(1234, "Example Deck", "Example Deck with media");
-/// deck.add_note(Note::new(model.clone(), vec!["What is the capital of France?", "Paris", "[sound:sound.mp3]"])?);
-/// deck.add_note(Note::new(model.clone(), vec!["What is the capital of France?", "Paris", r#"<img src="image.jpg">"#])?);
+/// deck.add_note(Note::new(model.clone(), vec!["What is the capital of France.unwrap()", "Paris", "[sound:sound.mp3]"]).unwrap());
+/// deck.add_note(Note::new(model.clone(), vec!["What is the capital of France.unwrap()", "Paris", r#"<img src="image.jpg">"#]).unwrap());
 ///
-/// let mut package = Package::new(vec![my_deck], vec!["sound.mp3", "images/image.jpg"])?;
-/// package.write_to_file("output.apkg")?;
+/// let mut package = Package::new(vec![deck], vec![/*"sound.mp3", "images/image.jpg"*/]).unwrap();
+/// package.write_to_file("output.apkg").unwrap();
 /// ```
 pub struct Package {
     decks: Vec<Deck>,
@@ -149,8 +149,8 @@ impl Package {
 }
 
 fn read_file_bytes<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
-    let mut handle = File::open(path)?;
+    let mut file = File::open(path)?;
     let mut data = Vec::new();
-    handle.read_to_end(&mut data)?;
+    file.read_to_end(&mut data)?;
     Ok(data)
 }

@@ -40,7 +40,7 @@ impl Deck {
     /// use genanki_rs::{Deck, Note, basic_model};
     ///
     /// let mut my_deck = Deck::new(1234, "Example deck", "This is an example deck");
-    /// my_deck.add_note(Note::new(basic_model(), vec!["What is the capital of France?", "Paris"])?);
+    /// my_deck.add_note(Note::new(basic_model(), vec!["What is the capital of France.unwrap()", "Paris"]).unwrap());
     /// ```
     pub fn add_note(&mut self, note: Note) {
         self.notes.push(note);
@@ -126,9 +126,9 @@ impl Deck {
     /// use genanki_rs::{Deck, Note, basic_model};
     ///
     /// let mut my_deck = Deck::new(1234, "Example deck", "This is an example deck");
-    /// my_deck.add_note(Note::new(basic_model(), vec!["What is the capital of France?", "Paris"])?);
+    /// my_deck.add_note(Note::new(basic_model(), vec!["What is the capital of France.unwrap()", "Paris"]).unwrap());
     ///
-    /// my_deck.write_to_file("output.apkg")?;
+    /// my_deck.write_to_file("output.apkg").unwrap();
     /// ```
     ///
     /// This is equivalent to:
@@ -136,9 +136,9 @@ impl Deck {
     /// use genanki_rs::{Deck, Note, basic_model, Package};
     ///
     /// let mut my_deck = Deck::new(1234, "Example deck", "This is an example deck");
-    /// my_deck.add_note(Note::new(basic_model(), vec!["What is the capital of France?", "Paris"])?);
+    /// my_deck.add_note(Note::new(basic_model(), vec!["What is the capital of France.unwrap()", "Paris"]).unwrap());
     ///
-    /// Package::new(vec![my_deck], vec![])?.write_to_file("output.apkg")?;
+    /// Package::new(vec![my_deck], vec![]).unwrap().write_to_file("output.apkg").unwrap();
     /// ```
     pub fn write_to_file(&self, file: &str) -> Result<(), Error> {
         Package::new(vec![self.clone()], vec![])?.write_to_file(file)?;
