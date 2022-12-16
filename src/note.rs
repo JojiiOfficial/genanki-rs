@@ -161,7 +161,7 @@ impl<'a> Note<'a> {
         &self,
         transaction: &Transaction,
         timestamp: f64,
-        deck_id: usize,
+        deck_id: i64,
         mut id_gen: &mut RangeFrom<usize>,
     ) -> Result<(), Error> {
         self.check_number_model_fields_matches_num_fields()?;
@@ -286,7 +286,7 @@ mod tests {
     use std::time::{SystemTime, UNIX_EPOCH};
     use tempfile::{NamedTempFile, TempPath};
 
-    fn write_to_db_setup(db_file: &TempPath) -> (Connection, f64, usize, RangeFrom<usize>) {
+    fn write_to_db_setup(db_file: &TempPath) -> (Connection, f64, i64, RangeFrom<usize>) {
         let conn = Connection::open(&db_file).unwrap();
         conn.execute_batch(APKG_SCHEMA).unwrap();
         conn.execute_batch(APKG_COL).unwrap();

@@ -11,18 +11,18 @@ use std::ops::RangeFrom;
 /// A flashcard deck which can be written into an .apkg file.
 #[derive(Clone)]
 pub struct Deck<'a> {
-    id: usize,
+    id: i64,
     name: String,
     description: String,
     notes: Vec<Note<'a>>,
-    models: HashMap<usize, Model>,
+    models: HashMap<i64, Model>,
 }
 
 impl<'a> Deck<'a> {
     /// Creates a new deck with an `id`, `name` and `description`.
     ///
     /// `id` should always be unique when creating multiple decks.
-    pub fn new(id: usize, name: &str, description: &str) -> Self {
+    pub fn new(id: i64, name: &str, description: &str) -> Self {
         Self {
             id,
             name: name.to_string(),
@@ -59,7 +59,7 @@ impl<'a> Deck<'a> {
             deck_db_entry_dyn: 0,
             extend_new: 0,
             extend_rev: 50,
-            id: self.id.clone(),
+            id: self.id,
             lrn_today: vec![163, 2],
             deck_db_entry_mod: 1425278051,
             name: self.name.clone(),
@@ -85,7 +85,7 @@ impl<'a> Deck<'a> {
         let decks_json_str: String = transaction
             .query_row("SELECT decks FROM col", [], |row| row.get(0))
             .map_err(database_error)?;
-        let mut decks: HashMap<usize, DeckDbEntry> =
+        let mut decks: HashMap<i64, DeckDbEntry> =
             serde_json::from_str(&decks_json_str).map_err(json_error)?;
         decks.insert(self.id, self.to_deck_db_entry());
         transaction
@@ -98,7 +98,7 @@ impl<'a> Deck<'a> {
         let models_json_str: String = transaction
             .query_row("SELECT models FROM col", [], |row| row.get(0))
             .map_err(database_error)?;
-        let mut models: HashMap<usize, ModelDbEntry> =
+        let mut models: HashMap<i64, ModelDbEntry> =
             serde_json::from_str(&models_json_str).map_err(json_error)?;
         for note in self.notes.clone().iter() {
             self.add_model(note.model());
