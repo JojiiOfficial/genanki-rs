@@ -320,7 +320,7 @@ mod tests {
         // Question: NOTE ONE: [...]
         // Answer:   NOTE ONE: single deletion
         let fields = vec!["NOTE ONE: {{c1::single deletion}}", ""];
-        let cloze_note = Note::new(model.clone(), fields).unwrap();
+        let cloze_note = Note::new(&model, fields).unwrap();
         let card_ord_set = cloze_note
             .cards()
             .iter()
@@ -342,7 +342,7 @@ mod tests {
             "NOTE TWO: {{c1::1st deletion}} {{c2::2nd deletion}} {{c3::3rd deletion}}",
             "",
         ];
-        let cloze_note = Note::new(model.clone(), fields).unwrap();
+        let cloze_note = Note::new(&model, fields).unwrap();
         let mut sorted = cloze_note
             .cards()
             .iter()
@@ -355,7 +355,7 @@ mod tests {
         // Question: NOTE THREE: C1-CLOZE
         // Answer:   NOTE THREE: 1st deletion
         let fields = vec!["NOTE THREE: {{c1::1st deletion::C1-CLOZE}}", ""];
-        let cloze_note = Note::new(model.clone(), fields).unwrap();
+        let cloze_note = Note::new(&model, fields).unwrap();
         let card_ord_set = cloze_note
             .cards()
             .iter()
@@ -371,7 +371,7 @@ mod tests {
             "NOTE FOUR: {{c1::1st deletion}} foo {{c2::2nd deletion}} bar {{c1::3rd deletion}}",
             "",
         ];
-        let cloze_note = Note::new(model.clone(), fields).unwrap();
+        let cloze_note = Note::new(&model, fields).unwrap();
         let mut sorted = cloze_note
             .cards()
             .iter()
@@ -393,7 +393,8 @@ mod tests {
             "{{c1::Berlin}} is the capital of {{c2::Germany}}",
             "{{c3::Paris}} is the capital of {{c4::France}}",
         ];
-        let note = Note::new(multi_field_cloze_model(), fields).unwrap();
+        let model = multi_field_cloze_model();
+        let note = Note::new(&model, fields).unwrap();
         let mut sorted = note
             .cards()
             .iter()
@@ -409,7 +410,8 @@ mod tests {
             "{{c2::Mitochondria}} are the {{c3::powerhouses}} of the cell",
             "",
         ];
-        let note = Note::new(cloze_model(), fields).unwrap();
+        let model = cloze_model();
+        let note = Note::new(&model, fields).unwrap();
         let mut sorted = note
             .cards()
             .iter()
@@ -425,7 +427,8 @@ mod tests {
             "{{c1::Washington, D.C.}} is the capital of {{c2::the\nUnited States\nof America}}",
             "",
         ];
-        let note = Note::new(cloze_model(), fields).unwrap();
+        let model = cloze_model();
+        let note = Note::new(&model, fields).unwrap();
         let mut sorted = note
             .cards()
             .iter()

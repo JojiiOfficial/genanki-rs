@@ -5,7 +5,7 @@ use zip::{write::FileOptions, ZipWriter};
 
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{Read, Write};
+use std::io::{Seek, Write};
 use std::path::{Path, PathBuf};
 
 use crate::apkg_col::APKG_COL;
@@ -35,22 +35,22 @@ use std::str::FromStr;
 /// );
 ///
 /// let mut deck = Deck::new(1234, "Example Deck", "Example Deck with media");
-/// deck.add_note(Note::new(model.clone(), vec!["What is the capital of France.unwrap()", "Paris", "[sound:sound.mp3]"]).unwrap());
-/// deck.add_note(Note::new(model.clone(), vec!["What is the capital of France.unwrap()", "Paris", r#"<img src="image.jpg">"#]).unwrap());
+/// deck.add_note(Note::new(&model, vec!["What is the capital of France.unwrap()", "Paris", "[sound:sound.mp3]"]).unwrap());
+/// deck.add_note(Note::new(&model, vec!["What is the capital of France.unwrap()", "Paris", r#"<img src="image.jpg">"#]).unwrap());
 ///
 /// let mut package = Package::new(vec![deck], vec![/*"sound.mp3", "images/image.jpg"*/]).unwrap();
 /// package.write_to_file("output.apkg").unwrap();
 /// ```
-pub struct Package {
-    decks: Vec<Deck>,
+pub struct Package<'a> {
+    decks: Vec<Deck<'a>>,
     media_files: Vec<PathBuf>,
 }
 
-impl Package {
+impl<'a> Package<'a> {
     /// Create a new package with `decks` and `media_files`
     ///
     /// Returns `Err` if `media_files` are invalid
-    pub fn new(decks: Vec<Deck>, media_files: Vec<&str>) -> Result<Self, Error> {
+    pub fn new(decks: Vec<Deck<'a>>, media_files: Vec<&str>) -> Result<Self, Error> {
         let media_files = media_files
             .iter()
             .map(|&s| PathBuf::from_str(s))
@@ -58,11 +58,31 @@ impl Package {
         Ok(Self { decks, media_files })
     }
 
+    /// Writes the package to a writer
+    ///
+    /// Returns `Err` if an IO error occurrs
+    pub fn write_to<W>(&mut self, out: W) -> Result<(), Error>
+    where
+        W: Write + Seek,
+    {
+        self.write_to_maybe_timestamp(out, None)
+    }
+
     /// Writes the package to a file
     ///
     /// Returns `Err` if the `file` cannot be created
     pub fn write_to_file(&mut self, file: &str) -> Result<(), Error> {
         self.write_to_file_maybe_timestamp(file, None)
+    }
+
+    /// Writes the package to a writer using a timestamp
+    ///
+    /// Returns `Err` if an IO error occurrs
+    pub fn write_to_timestamp<W>(&mut self, out: W, timestamp: f64) -> Result<(), Error>
+    where
+        W: Write + Seek,
+    {
+        self.write_to_maybe_timestamp(out, Some(timestamp))
     }
 
     /// Writes the package to a file using a timestamp
@@ -78,22 +98,31 @@ impl Package {
         timestamp: Option<f64>,
     ) -> Result<(), Error> {
         let file = File::create(&file)?;
+        self.write_to_maybe_timestamp(file, timestamp)?;
+        Ok(())
+    }
+
+    fn write_to_maybe_timestamp<W>(&mut self, out: W, timestamp: Option<f64>) -> Result<(), Error>
+    where
+        W: Write + Seek,
+    {
         let db_file = NamedTempFile::new()?.into_temp_path();
 
         let mut conn = Connection::open(&db_file).map_err(database_error)?;
         let transaction = conn.transaction().map_err(database_error)?;
 
-        let timestamp = if let Some(timestamp) = timestamp {
-            timestamp
-        } else {
-            SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs_f64()
-        };
+        let timestamp = timestamp.unwrap_or_else(|| {
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .map(|i| i.as_secs_f64())
+                .unwrap_or(0.0)
+        });
 
         self.write_to_db(&transaction, timestamp)?;
         transaction.commit().map_err(database_error)?;
         conn.close().expect("Should always close");
 
-        let mut outzip = ZipWriter::new(file);
+        let mut outzip = ZipWriter::new(out);
         outzip
             .start_file("collection.anki2", FileOptions::default())
             .map_err(zip_error)?;
@@ -148,9 +177,7 @@ impl Package {
     }
 }
 
+#[inline]
 fn read_file_bytes<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
-    let mut file = File::open(path)?;
-    let mut data = Vec::new();
-    file.read_to_end(&mut data)?;
-    Ok(data)
+    Ok(std::fs::read(path)?)
 }

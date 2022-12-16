@@ -10,15 +10,15 @@ use std::ops::RangeFrom;
 
 /// A flashcard deck which can be written into an .apkg file.
 #[derive(Clone)]
-pub struct Deck {
+pub struct Deck<'a> {
     id: usize,
     name: String,
     description: String,
-    notes: Vec<Note>,
+    notes: Vec<Note<'a>>,
     models: HashMap<usize, Model>,
 }
 
-impl Deck {
+impl<'a> Deck<'a> {
     /// Creates a new deck with an `id`, `name` and `description`.
     ///
     /// `id` should always be unique when creating multiple decks.
@@ -40,9 +40,10 @@ impl Deck {
     /// use genanki_rs::{Deck, Note, basic_model};
     ///
     /// let mut my_deck = Deck::new(1234, "Example deck", "This is an example deck");
-    /// my_deck.add_note(Note::new(basic_model(), vec!["What is the capital of France.unwrap()", "Paris"]).unwrap());
+    /// let model = basic_model();
+    /// my_deck.add_note(Note::new(&model, vec!["What is the capital of France.unwrap()", "Paris"]).unwrap());
     /// ```
-    pub fn add_note(&mut self, note: Note) {
+    pub fn add_note(&mut self, note: Note<'a>) {
         self.notes.push(note);
     }
 
@@ -125,8 +126,9 @@ impl Deck {
     /// ```rust
     /// use genanki_rs::{Deck, Note, basic_model};
     ///
+    /// let model = basic_model();
     /// let mut my_deck = Deck::new(1234, "Example deck", "This is an example deck");
-    /// my_deck.add_note(Note::new(basic_model(), vec!["What is the capital of France.unwrap()", "Paris"]).unwrap());
+    /// my_deck.add_note(Note::new(&model, vec!["What is the capital of France.unwrap()", "Paris"]).unwrap());
     ///
     /// my_deck.write_to_file("output.apkg").unwrap();
     /// ```
@@ -136,7 +138,8 @@ impl Deck {
     /// use genanki_rs::{Deck, Note, basic_model, Package};
     ///
     /// let mut my_deck = Deck::new(1234, "Example deck", "This is an example deck");
-    /// my_deck.add_note(Note::new(basic_model(), vec!["What is the capital of France.unwrap()", "Paris"]).unwrap());
+    /// let model = basic_model();
+    /// my_deck.add_note(Note::new(&model, vec!["What is the capital of France.unwrap()", "Paris"]).unwrap());
     ///
     /// Package::new(vec![my_deck], vec![]).unwrap().write_to_file("output.apkg").unwrap();
     /// ```

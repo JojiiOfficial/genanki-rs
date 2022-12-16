@@ -13,9 +13,10 @@
 //!
 //! fn main() -> Result<(), Error> {
 //!     let mut deck = Deck::new(1234, "Example Deck", "Example Deck containing 2 Flashcards");
-//!     deck.add_note(Note::new(basic_model(), vec!["What is the capital of France.unwrap()", "Paris"]).unwrap());
-//!     deck.add_note(Note::new(basic_model(), vec!["What is the capital of Germany.unwrap()", "Berlin"]).unwrap());
-//!     deck.write_to_file("output.apkg").unwrap();
+//!     let model = basic_model();
+//!     deck.add_note(Note::new(&model, vec!["What is the capital of France?", "Paris"])?);
+//!     deck.add_note(Note::new(&model, vec!["What is the capital of Germany?", "Berlin"])?);
+//!     deck.write_to_file("output.apkg")?;
 //!     Ok(())
 //! }
 //! ```
@@ -32,7 +33,7 @@
 //!
 //! fn main() -> Result<(), Error> {
 //!     // let my_model = ...
-//!     let my_note = Note::new(my_model, vec!["Capital of Argentina", "Buenos Aires"]).unwrap();
+//!     let my_note = Note::new(my_model, vec!["Capital of Argentina", "Buenos Aires"])?;
 //!     Ok(())
 //! }
 //! ```
@@ -83,7 +84,7 @@
 //! ### Generating a Deck/Package
 //! To import your notes into Anki, you need to add them to a `Deck`:
 //!
-//! ```rust,no_run
+//! ```rust,no_run,ignore
 //! use genanki_rs::{Deck, Error};
 //! # use genanki_rs::Note;
 //! # fn make_note() -> Note { todo!() }
@@ -105,7 +106,7 @@
 //! Then, create a `Package` for your `Deck` and write it to a file:
 //!
 //! ```rust,ignore
-//! my_deck.write_to_file("output.apkg").unwrap();
+//! my_deck.write_to_file("output.apkg")?;
 //! ```
 //!
 //! You can then load `output.apkg` into Anki using File -> Import...
@@ -119,8 +120,8 @@
 //! fn main() -> Result<(), Error> {
 //!     // ...
 //!     // my_deck.add(my_note)
-//!     let mut my_package = Package::new(vec![my_deck], vec!["sound.mp3", "images/image.jpg"]).unwrap();
-//!     my_package.write_to_file("output.apkg").unwrap();
+//!     let mut my_package = Package::new(vec![my_deck], vec!["sound.mp3", "images/image.jpg"])?;
+//!     my_package.write_to_file("output.apkg")?;
 //!     Ok(())
 //! }
 //! ```
@@ -160,14 +161,14 @@
 //! #        .qfmt("{{Question}}{{Question}}<br>{{MyMedia}}") // AND THIS
 //! #        .afmt(r#"{{FrontSide}}<hr id="answer">{{Answer}}"#)],
 //! # );
-//! let my_note = Note::new(my_model.clone(), vec!["Capital of Argentina", "Buenos Aires", "[sound:sound.mp3]"]).unwrap();
+//! let my_note = Note::new(&my_model, vec!["Capital of Argentina", "Buenos Aires", "[sound:sound.mp3]"])?;
 //! // or
-//! let my_note = Note::new(my_model.clone(), vec!["Capital of Argentina", "Buenos Aires", r#"<img src="image.jpg">"#]).unwrap();
+//! let my_note = Note::new(&my_model, vec!["Capital of Argentina", "Buenos Aires", r#"<img src="image.jpg">"#])?;
 //! # Ok(())
 //! # }
 //! ```
 //!
-//! You *cannot* put `<img src="{MyMedia}">` in the template and `image.jpg` in the field. See these sections in the Anki manual for more information: [Importing Media](https://docs.ankiweb.net/#/importing.unwrap()id=importing-media) and [Media & LaTeX](https://docs.ankiweb.net/#/templates/fields.unwrap()id=media-amp-latex).
+//! You *cannot* put `<img src="{MyMedia}">` in the template and `image.jpg` in the field. See these sections in the Anki manual for more information: [Importing Media](https://docs.ankiweb.net/#/importing?id=importing-media) and [Media & LaTeX](https://docs.ankiweb.net/#/templates/fields?id=media-amp-latex).
 //!
 //! You should only put the filename (aka basename) and not the full path in the field; `<img src="images/image.jpg">` will *not* work. Media files should have unique filenames.
 //!
@@ -489,7 +490,8 @@ def check_media(col):
         Python::with_gil(|py| {
             let mut setup = TestSetup::new(&py);
             let mut deck = Deck::new(123456, "foodeck", "");
-            deck.add_note(Note::new(model(), vec!["a", "b"]).unwrap());
+            let model = model();
+            deck.add_note(Note::new(&model, vec!["a", "b"]).unwrap());
             setup.import_package(Package::new(vec![deck], vec![]).unwrap(), None);
             assert!(
                 setup.check_col("len(col.decks.all()) == 2 and {i['name'] for i in col.decks.all()} ==  {'Default', 'foodeck'}")
@@ -503,9 +505,10 @@ def check_media(col):
         Python::with_gil(|py| {
             let mut setup = TestSetup::new(&py);
             let mut deck = Deck::new(123456, "foodeck", "");
-            deck.add_note(Note::new(cn_model(), vec!["a", "b", "c"]).unwrap());
-            deck.add_note(Note::new(cn_model(), vec!["d", "e", "f"]).unwrap());
-            deck.add_note(Note::new(cn_model(), vec!["g", "h", "i"]).unwrap());
+            let model = cn_model();
+            deck.add_note(Note::new(&model, vec!["a", "b", "c"]).unwrap());
+            deck.add_note(Note::new(&model, vec!["d", "e", "f"]).unwrap());
+            deck.add_note(Note::new(&model, vec!["g", "h", "i"]).unwrap());
             setup.import_package(Package::new(vec![deck], vec![]).unwrap(), None);
             assert!(setup.check_col("len([col.getCard(i) for i in col.find_cards('')]) == 6"));
         });
@@ -518,7 +521,8 @@ def check_media(col):
             let mut setup = TestSetup::new(&py);
             let mut deck1 = Deck::new(123456, "foodeck", "");
             let mut deck2 = Deck::new(654321, "bardeck", "");
-            let note = Note::new(model(), vec!["a", "b"]).unwrap();
+            let model = model();
+            let note = Note::new(&model, vec!["a", "b"]).unwrap();
             deck1.add_note(note.clone());
             deck2.add_note(note);
             setup.import_package(Package::new(vec![deck1, deck2], vec![]).unwrap(), None);
@@ -552,8 +556,9 @@ def check_media(col):
 
     #[test]
     fn notes_generate_cards_based_on_req_cn() {
-        let note1 = Note::new(cn_model(), vec!["中國", "中国", "China"]).unwrap();
-        let note2 = Note::new(cn_model(), vec!["你好", "", "hello"]).unwrap();
+        let model = cn_model();
+        let note1 = Note::new(&model, vec!["中國", "中国", "China"]).unwrap();
+        let note2 = Note::new(&model, vec!["你好", "", "hello"]).unwrap();
 
         assert_eq!(note1.cards().len(), 2);
         assert_eq!(note1.cards()[0].ord(), 0);
@@ -565,13 +570,10 @@ def check_media(col):
 
     #[test]
     fn note_generate_cards_based_on_req_with_hint() {
-        let note1 = Note::new(
-            model_with_hint(),
-            vec!["capital of California", "", "Sacramento"],
-        )
-        .unwrap();
+        let model = model_with_hint();
+        let note1 = Note::new(&model, vec!["capital of California", "", "Sacramento"]).unwrap();
         let note2 = Note::new(
-            model_with_hint(),
+            &model,
             vec!["capital of Iowa", "French for \"The Moines\"", "Des Moines"],
         )
         .unwrap();
@@ -589,8 +591,9 @@ def check_media(col):
         std::env::set_current_dir(tmp_dir.path()).unwrap();
 
         let mut deck = Deck::new(123456, "foodeck", "");
+        let model = model();
         let note = Note::new(
-            model(),
+            &model,
             vec![
                 "question [sound:present.mp3] [sound:missing.mp3]",
                 r#"answer <img src="present.jpg"> <img src="missing.jpg">"#,
@@ -630,8 +633,9 @@ def check_media(col):
         std::env::set_current_dir(tmp_dir.path()).unwrap();
 
         let mut deck = Deck::new(123456, "foodeck", "");
+        let model = model();
         let note = Note::new(
-            model(),
+            &model,
             vec![
                 "question [sound:present.mp3] [sound:missing.mp3]",
                 r#"answer <img src="present.jpg"> <img src="missing.jpg">"#,
@@ -675,7 +679,8 @@ def check_media(col):
         Python::with_gil(|py| {
             let mut setup = TestSetup::new(&py);
             let mut deck = Deck::new(112233, "foodeck", "Very nice deck");
-            let note = Note::new(model(), vec!["a", "b"]).unwrap();
+            let model = model();
+            let note = Note::new(&model, vec!["a", "b"]).unwrap();
             deck.add_note(note);
             setup.import_package(Package::new(vec![deck], vec![]).unwrap(), None);
             assert!(setup
@@ -689,7 +694,8 @@ def check_media(col):
         Python::with_gil(|py| {
             let mut setup = TestSetup::new(&py);
             let mut deck = Deck::new(1104693946, "foodeck", "");
-            let note = Note::new(model(), vec!["a", "b"]).unwrap();
+            let model = model();
+            let note = Note::new(&model, vec!["a", "b"]).unwrap();
             deck.add_note(note);
             setup.import_package(Package::new(vec![deck], vec![]).unwrap(), None);
             assert!(
@@ -704,7 +710,8 @@ def check_media(col):
         Python::with_gil(|py| {
             let mut setup = TestSetup::new(&py);
             let mut deck = Deck::new(69696969696, "foodeck", "");
-            let note = Note::new(model_with_latex(), vec!["a", "b"]).unwrap();
+            let model = model_with_latex();
+            let note = Note::new(&model, vec!["a", "b"]).unwrap();
             deck.add_note(note);
             setup.import_package(Package::new(vec![deck], vec![]).unwrap(), None);
             let col = setup.col();
@@ -745,7 +752,8 @@ def latex(col, key):
         Python::with_gil(|py| {
             let mut setup = TestSetup::new(&py);
             let mut deck = Deck::new(1104693946, "foodeck", "");
-            let note = Note::new(model_with_sort_field_index(), vec!["a", "b"]).unwrap();
+            let model = model_with_sort_field_index();
+            let note = Note::new(&model, vec!["a", "b"]).unwrap();
             deck.add_note(note);
             setup.import_package(Package::new(vec![deck], vec![]).unwrap(), None);
             assert!(setup.check_col(&format!(

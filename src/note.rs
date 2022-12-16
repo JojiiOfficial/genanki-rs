@@ -11,8 +11,8 @@ use std::str::FromStr;
 
 /// Note (Flashcard) to be added to a `Deck`
 #[derive(Clone)]
-pub struct Note {
-    model: Model,
+pub struct Note<'a> {
+    model: &'a Model,
     fields: Vec<String>,
     sort_field: bool,
     tags: Vec<String>,
@@ -20,7 +20,7 @@ pub struct Note {
     cards: Vec<Card>,
 }
 
-impl Note {
+impl<'a> Note<'a> {
     /// Creates a new Note with a new `model` and `fields`
     ///
     /// Returns `Err` if the fields are not matching the model or if the fields are invalid
@@ -29,9 +29,10 @@ impl Note {
     /// ```
     /// use genanki_rs::{Note, basic_model};
     ///
-    /// let note = Note::new(basic_model(), vec!["What is the capital of France?", "Paris"]);
+    /// let model = basic_model();
+    /// let note = Note::new(&model, vec!["What is the capital of France?", "Paris"]);
     /// ```
-    pub fn new(model: Model, fields: Vec<&str>) -> Result<Self, Error> {
+    pub fn new(model: &'a Model, fields: Vec<&str>) -> Result<Self, Error> {
         let fields = fields.iter().map(|&s| s.to_string()).collect();
         let cards = match model.get_model_type() {
             ModelType::FrontBack => front_back_cards(&model, &fields)?,
@@ -55,7 +56,7 @@ impl Note {
     ///
     /// Returns `Err` if tags or fields are invalid
     pub fn new_with_options(
-        model: Model,
+        model: &'a Model,
         fields: Vec<&str>,
         sort_field: Option<bool>,
         tags: Option<Vec<&str>>,
@@ -306,7 +307,7 @@ mod tests {
                 .qfmt("{{Question}}")
                 .afmt(r#"{{FrontSide}}<hr id="answer">{{Answer}}"#)],
         );
-        let my_note = Note::new(my_model, vec!["Capital of Argentina", "Buenos Aires"]).unwrap();
+        let my_note = Note::new(&my_model, vec!["Capital of Argentina", "Buenos Aires"]).unwrap();
         let db_file = NamedTempFile::new().unwrap().into_temp_path();
         let (mut conn, timestamp, deck_id, mut id_gen) = write_to_db_setup(&db_file);
         let transaction = conn.transaction().unwrap();
@@ -319,7 +320,7 @@ mod tests {
     #[test]
     fn tags_new() {
         let _ = Note::new_with_options(
-            Model::new(0, "test", vec![], vec![]),
+            &Model::new(0, "test", vec![], vec![]),
             vec![],
             None,
             Some(vec!["foo", "bar", "baz"]),
@@ -332,7 +333,7 @@ mod tests {
     #[should_panic]
     fn tags_new_panic() {
         let _ = Note::new_with_options(
-            Model::new(0, "test", vec![], vec![]),
+            &Model::new(0, "test", vec![], vec![]),
             vec![],
             None,
             Some(vec!["fo o", "bar", "baz"]),
@@ -357,7 +358,7 @@ mod tests {
         );
 
         let note = Note::new(
-            model,
+            &model,
             vec![
                 "Capital of Germany",
                 "Berlin",
@@ -389,7 +390,7 @@ mod tests {
                 .afmt(r#"{{FrontSide}}<hr id="answer">{{Answer}}"#)],
         );
 
-        let note = Note::new(model, vec!["Capital of Germany", "Berlin"]).unwrap();
+        let note = Note::new(&model, vec!["Capital of Germany", "Berlin"]).unwrap();
         let db_file = NamedTempFile::new().unwrap().into_temp_path();
         let (mut conn, timestamp, deck_id, mut id_gen) = write_to_db_setup(&db_file);
         let transaction = conn.transaction().unwrap();
@@ -411,7 +412,7 @@ mod tests {
         );
 
         let note = Note::new(
-            model,
+            &model,
             vec![
                 "Capital of Germany",
                 "Berlin",
@@ -519,7 +520,7 @@ mod tests {
             vec![Field::new("a"), Field::new("b")],
             vec![Template::new("template")],
         );
-        let _note = Note::new(model, vec!["a", "b"])?
+        let _note = Note::new(&model, vec!["a", "b"])?
             .guid("1234")
             .tags(["tag_a"])
             .with_tag("tag_b")

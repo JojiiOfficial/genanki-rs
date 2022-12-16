@@ -291,32 +291,17 @@ mod tests {
     fn builtin_models() {
         let mut my_deck = Deck::new(1598559905, "Country Capitals", "");
 
+        let model = basic_model();
+        my_deck.add_note(Note::new(&model, vec!["Capital of Argentina", "Buenos Aires"]).unwrap());
+        let model = basic_and_reversed_card_model();
+        my_deck.add_note(Note::new(&model, vec!["Costa Rica", "San José"]).unwrap());
+        let model = basic_optional_reversed_card_model();
+        my_deck.add_note(Note::new(&model, vec!["France", "Paris", "y"]).unwrap());
+        let model = basic_type_in_the_answer_model();
+        my_deck.add_note(Note::new(&model, vec!["Taiwan", "Taipei"]).unwrap());
+        let model = cloze_model();
         my_deck.add_note(
-            Note::new(basic_model(), vec!["Capital of Argentina", "Buenos Aires"]).unwrap(),
-        );
-        my_deck.add_note(
-            Note::new(
-                basic_and_reversed_card_model(),
-                vec!["Costa Rica", "San José"],
-            )
-            .unwrap(),
-        );
-        my_deck.add_note(
-            Note::new(
-                basic_optional_reversed_card_model(),
-                vec!["France", "Paris", "y"],
-            )
-            .unwrap(),
-        );
-        my_deck.add_note(
-            Note::new(basic_type_in_the_answer_model(), vec!["Taiwan", "Taipei"]).unwrap(),
-        );
-        my_deck.add_note(
-            Note::new(
-                cloze_model(),
-                vec!["{{c1::Rome}} is the capital of {{c2::Italy}}"],
-            )
-            .unwrap(),
+            Note::new(&model, vec!["{{c1::Rome}} is the capital of {{c2::Italy}}"]).unwrap(),
         );
 
         let out_file = NamedTempFile::new().unwrap().into_temp_path();

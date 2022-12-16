@@ -27,7 +27,7 @@ pub struct DeckDbEntry {
     pub usn: i64,
 }
 
-impl From<Deck> for DeckDbEntry {
+impl<'a> From<Deck<'a>> for DeckDbEntry {
     fn from(deck: Deck) -> Self {
         deck.into()
     }
