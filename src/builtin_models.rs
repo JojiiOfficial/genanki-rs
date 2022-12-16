@@ -153,14 +153,14 @@ pub fn basic_optional_reversed_card_model() -> Model {
         vec![
             Field::new("Front").font("Arial"),
             Field::new("Back").font("Arial"),
-            Field::new("Add Reverse").font("Arial"),
+            Field::new("AddReverse").font("Arial"),
         ],
         vec![
             Template::new("Card 1")
                 .qfmt("{{Front}}")
                 .afmt("{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}"),
             Template::new("Card 2")
-                .qfmt("{{#Add Reverse}}{{Back}}{{/Add Reverse}}")
+                .qfmt("{{#AddReverse}}{{Back}}{{/AddReverse}}")
                 .afmt("{{FrontSide}}\n\n<hr id=answer>\n\n{{Front}}"),
         ],
         Some(
