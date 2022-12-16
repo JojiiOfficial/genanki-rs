@@ -32,8 +32,8 @@ impl<'a> Note<'a> {
     /// let model = basic_model();
     /// let note = Note::new(&model, vec!["What is the capital of France?", "Paris"]);
     /// ```
-    pub fn new(model: &'a Model, fields: Vec<&str>) -> Result<Self, Error> {
-        let fields = fields.iter().map(|&s| s.to_string()).collect();
+    pub fn new(model: &'a Model, fields: Vec<impl ToString>) -> Result<Self, Error> {
+        let fields = fields.iter().map(|s| s.to_string()).collect();
         let cards = match model.get_model_type() {
             ModelType::FrontBack => front_back_cards(&model, &fields)?,
             ModelType::Cloze => cloze_cards(&model, &fields),
@@ -57,9 +57,9 @@ impl<'a> Note<'a> {
     /// Returns `Err` if tags or fields are invalid
     pub fn new_with_options(
         model: &'a Model,
-        fields: Vec<&str>,
+        fields: Vec<impl ToString>,
         sort_field: Option<bool>,
-        tags: Option<Vec<&str>>,
+        tags: Option<Vec<impl ToString>>,
         guid: Option<&str>,
     ) -> Result<Self, Error> {
         let tags = tags
@@ -321,7 +321,7 @@ mod tests {
     fn tags_new() {
         let _ = Note::new_with_options(
             &Model::new(0, "test", vec![], vec![]),
-            vec![],
+            Vec::<String>::new(),
             None,
             Some(vec!["foo", "bar", "baz"]),
             None,
@@ -334,7 +334,7 @@ mod tests {
     fn tags_new_panic() {
         let _ = Note::new_with_options(
             &Model::new(0, "test", vec![], vec![]),
-            vec![],
+            Vec::<String>::new(),
             None,
             Some(vec!["fo o", "bar", "baz"]),
             None,
