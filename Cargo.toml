@@ -11,14 +11,14 @@ repository = "https://github.com/yannickfunk/genanki-rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rusqlite = { version = "0.28.0", features = ["bundled"] }
+rusqlite = { version = "0.29.0", features = ["bundled"] }
 tempfile = "3.2.0"
-zip = "0.6.3"
+zip = "0.6"
 serde_json = "1.0.64"
-fancy-regex = "0.10.0"
+fancy-regex = "0.11"
 serde = { version = "1.0", features = ["derive"] }
-ramhorns = "0.14.0" #error
-thiserror = "1.0.37"
+ramhorns = "0.14" #error
+thiserror = "1.0"
 
 [dev-dependencies]
 anyhow = "1.0.62"
